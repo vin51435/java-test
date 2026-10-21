@@ -14,10 +14,11 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("unused") // Instantiated and invoked by Spring Framework via Reflection
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
             // 1. Disable CSRF since mobile clients use stateless Bearer tokens
             .csrf(AbstractHttpConfigurer::disable)
