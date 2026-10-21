@@ -4,7 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -23,10 +24,11 @@ import java.util.UUID;
  * 3. Logs incoming methods, URIs, response status codes, and client IPs.
  * 4. Injects X-Request-Id into HTTP response headers for Android client-side correlation.
  */
-@Slf4j
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class HttpLoggingFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpLoggingFilter.class);
 
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
     public static final String MDC_REQUEST_ID_KEY = "requestId";
