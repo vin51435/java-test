@@ -42,3 +42,54 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+// =============================================================================
+// Enterprise Convenience Tasks (Equivalent to Node.js npm scripts)
+// =============================================================================
+
+// Default bootRun sets dev profile unless overridden
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+	systemProperty("spring.profiles.active", System.getProperty("spring.profiles.active") ?: "dev")
+}
+
+// ./gradlew dev -> Starts backend in dev mode
+tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("dev") {
+	group = "application"
+	description = "Runs Manasvia Backend in DEV mode (Virtual Threads, SQL debug, Local Docker)"
+	classpath = sourceSets["main"].runtimeClasspath
+	mainClass.set("com.manasvia.backend.BackendApplication")
+	systemProperty("spring.profiles.active", "dev")
+}
+
+// ./gradlew prod -> Starts backend in prod mode
+tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("prod") {
+	group = "application"
+	description = "Runs Manasvia Backend with PROD profile settings"
+	classpath = sourceSets["main"].runtimeClasspath
+	mainClass.set("com.manasvia.backend.BackendApplication")
+	systemProperty("spring.profiles.active", "prod")
+}
+
+// ./gradlew dockerUp -> Starts postgres (pgvector) and redis
+tasks.register<Exec>("dockerUp") {
+	group = "docker"
+	description = "Starts PostgreSQL (pgvector) and Redis containers"
+	workingDir = projectDir
+	commandLine = if (System.getProperty("os.name").lowercase().contains("windows")) {
+		listOf("cmd", "/c", "docker compose up -d")
+	} else {
+		listOf("docker", "compose", "up", "-d")
+	}
+}
+
+// ./gradlew dockerDown -> Stops containers
+tasks.register<Exec>("dockerDown") {
+	group = "docker"
+	description = "Stops PostgreSQL and Redis containers"
+	workingDir = projectDir
+	commandLine = if (System.getProperty("os.name").lowercase().contains("windows")) {
+		listOf("cmd", "/c", "docker compose down")
+	} else {
+		listOf("docker", "compose", "down")
+	}
+}

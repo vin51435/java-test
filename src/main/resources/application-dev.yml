@@ -1,0 +1,46 @@
+# ==============================================================================
+# Development Profile (application-dev.yml)
+# Used for local development with Docker Compose (PostgreSQL 16 + pgvector & Redis)
+# ==============================================================================
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # PostgreSQL + pgvector (Maps to Docker container on host port 5433)
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB:manasvia_dev}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgrespassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: ManasviaHikariDev
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
+
+  # JPA / Hibernate with verbose debugging for development
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+
+  # Redis in-memory cache
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+# Development Logging Levels
+logging:
+  level:
+    com.manasvia.backend: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO

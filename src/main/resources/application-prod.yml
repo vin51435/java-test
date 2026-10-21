@@ -1,0 +1,50 @@
+# ==============================================================================
+# Production Profile (application-prod.yml)
+# Zero hardcoded credentials; strictly populated via Cloud Container Environment
+# ==============================================================================
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # Production PostgreSQL (Cloud Managed, e.g. AWS RDS / GCP Cloud SQL)
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB}?sslmode=require
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: ManasviaHikariProd
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 20000
+
+  # Production JPA (No SQL echo, Flyway strictly governs schema)
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  # Production Managed Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:true}
+      timeout: 1000ms
+
+# Production Performance Logging (Errors only for SQL queries)
+logging:
+  level:
+    root: INFO
+    com.manasvia.backend: INFO
+    org.hibernate.SQL: ERROR
+    org.springframework.security: WARN
