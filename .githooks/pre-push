@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Branch Naming Enforcer (Husky equivalent for Manasvia Backend)
+# ==============================================================================
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Allowed branch patterns:
+#   main, master, setup, dev, staging
+#   feat/*, feature/*, fix/*, hotfix/*, refactor/*, docs/*, chore/*, test/*
+VALID_BRANCH_REGEX="^(main|master|setup|dev|staging|((feat|feature|fix|hotfix|refactor|docs|chore|test)\/[a-zA-Z0-9._-]+))$"
+
+if ! [[ "$CURRENT_BRANCH" =~ $VALID_BRANCH_REGEX ]]; then
+    echo -e "\033[0;31m[ERROR] Invalid branch name: '$CURRENT_BRANCH'\033[0m"
+    echo -e "Branches must adhere to standard team naming conventions:"
+    echo -e "  \033[1;32mfeat/<short-name>\033[0m     : New features (e.g., feat/soul-profile)"
+    echo -e "  \033[1;32mfix/<short-name>\033[0m      : Bug fixes (e.g., fix/jwt-expiry)"
+    echo -e "  \033[1;32mrefactor/<short-name>\033[0m : Refactoring (e.g., refactor/logging)"
+    echo -e "  \033[1;32mdocs/<short-name>\033[0m     : Documentation"
+    echo -e "  \033[1;32mchore/<short-name>\033[0m    : Maintenance"
+    echo -e "  \033[1;32msetup\033[0m                 : Foundational bootstrap branch"
+    echo -e "  \033[1;32mmain\033[0m                  : Production release branch\n"
+    exit 1
+fi
+
+exit 0

@@ -25,6 +25,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.flywaydb:flyway-database-postgresql")
+
+	// JJWT (Java JWT) for stateless authentication
+	val jjwtVersion = "0.12.6"
+	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	compileOnly("org.projectlombok:lombok")
 	runtimeOnly("org.postgresql:postgresql")
@@ -92,5 +98,17 @@ tasks.register<Exec>("dockerDown") {
 		listOf("cmd", "/c", "docker compose down")
 	} else {
 		listOf("docker", "compose", "down")
+	}
+}
+
+// ./gradlew installHooks -> Configures Husky-equivalent Git hooks & commitlint
+tasks.register<Exec>("installHooks") {
+	group = "git"
+	description = "Configures Git to use version-controlled .githooks and commit template"
+	workingDir = projectDir
+	commandLine = if (System.getProperty("os.name").lowercase().contains("windows")) {
+		listOf("cmd", "/c", "git config core.hooksPath .githooks && git config commit.template .gitmessage")
+	} else {
+		listOf("sh", "-c", "git config core.hooksPath .githooks && git config commit.template .gitmessage")
 	}
 }

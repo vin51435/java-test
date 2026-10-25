@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Conventional Commits Validator (Husky equivalent for Manasvia Backend)
+# ==============================================================================
+
+COMMIT_MSG_FILE="$1"
+FIRST_LINE=$(head -n 1 "$COMMIT_MSG_FILE")
+
+# Allow merge commits, fixup commits, squash commits, or empty lines
+if [[ "$FIRST_LINE" =~ ^Merge.* ]] || [[ "$FIRST_LINE" =~ ^(fixup|squash)! ]] || [[ -z "$FIRST_LINE" ]]; then
+    exit 0
+fi
+
+# Regex for Conventional Commits
+# Formats:
+#   feat: message
+#   feat(scope): message
+#   feat!: breaking change
+#   feat(scope)!: breaking change
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?!?: .{1,80}$"
+
+if ! [[ "$FIRST_LINE" =~ $PATTERN ]]; then
+    echo -e "\033[0;31m[ERROR] Invalid commit message format!\033[0m"
+    echo -e "Your message: \033[1;33m\"$FIRST_LINE\"\033[0m\n"
+    echo -e "\033[1;36mCommit messages must follow the Conventional Commits specification:\033[0m"
+    echo -e "  \033[1;32m<type>(<scope>): <short imperative description>\033[0m\n"
+    echo -e "Allowed types:"
+    echo -e "  \033[1;34mfeat\033[0m     : A new feature (e.g. endpoint, service)"
+    echo -e "  \033[1;34mfix\033[0m      : A bug fix"
+    echo -e "  \033[1;34mdocs\033[0m     : Documentation updates"
+    echo -e "  \033[1;34mstyle\033[0m    : Formatting, white-space, missing semi-colons"
+    echo -e "  \033[1;34mrefactor\033[0m : Code change that neither fixes a bug nor adds a feature"
+    echo -e "  \033[1;34mperf\033[0m     : Performance improvement (caching, query optimization)"
+    echo -e "  \033[1;34mtest\033[0m     : Adding or fixing unit/integration tests"
+    echo -e "  \033[1;34mbuild\033[0m    : Gradle build scripts, Docker, or dependencies"
+    echo -e "  \033[1;34mci\033[0m       : CI/CD workflow configuration"
+    echo -e "  \033[1;34mchore\033[0m    : Miscellaneous repo maintenance\n"
+    echo -e "Suggested modules for <scope>:"
+    echo -e "  \033[0;33midentity, profile, wisdom, widget, reflection, billing, security, config, logging\033[0m\n"
+    echo -e "Examples:"
+    echo -e "  \033[0;32mfeat(identity): implement anonymous guest token generation\033[0m"
+    echo -e "  \033[0;32mfix(security): resolve CORS policy for Android emulator\033[0m"
+    echo -e "  \033[0;32mchore(gradle): add spring-modulith starter dependency\033[0m\n"
+    exit 1
+fi
+
+exit 0
