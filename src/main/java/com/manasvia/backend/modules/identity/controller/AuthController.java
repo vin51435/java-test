@@ -4,6 +4,9 @@ import com.manasvia.backend.common.response.ApiResponse;
 import com.manasvia.backend.modules.identity.dto.GuestAuthRequest;
 import com.manasvia.backend.modules.identity.dto.TokenResponse;
 import com.manasvia.backend.modules.identity.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "01. Identity & Access", description = "Frictionless guest onboarding, token lifecycle, and authentication")
 public class AuthController {
 
     private final AuthService authService;
@@ -31,6 +35,21 @@ public class AuthController {
      * @return Standard {@link ApiResponse} wrapping the issued Bearer access token and refresh token.
      */
     @PostMapping("/guest")
+    @Operation(
+            summary = "Initialize or resume anonymous guest session",
+            description = "Idempotently resolves or registers a guest account using the provided device fingerprint. " +
+                    "Returns a 30-day extended HS256 JWT access token and a 60-day refresh token."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Guest authenticated successfully. Returns valid access and refresh tokens."
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request payload or blank device fingerprint."
+            )
+    })
     public ResponseEntity<ApiResponse<TokenResponse>> authenticateGuest(
             @Valid @RequestBody GuestAuthRequest request
     ) {

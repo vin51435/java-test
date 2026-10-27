@@ -37,6 +37,21 @@ manasvia:
     # Extended guest access token: 30 days (2,592,000,000 ms)
     guest-token-expiration-ms: ${JWT_GUEST_EXPIRATION:2592000000}
 
+# ==============================================================================
+# SpringDoc OpenAPI / Swagger UI Configuration
+# ==============================================================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+
 # Default Web Server Port
 server:
   port: ${SERVER_PORT:8080}

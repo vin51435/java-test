@@ -44,3 +44,10 @@ logging:
     org.hibernate.SQL: DEBUG
     org.springframework.security: INFO
     org.springframework.web: INFO
+
+# SpringDoc OpenAPI / Swagger UI enabled for local development
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
