@@ -1,5 +1,6 @@
 package com.manasvia.backend.common.security;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Enterprise Security Configuration for Manasvia REST API.
@@ -14,8 +16,25 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
-@SuppressWarnings("unused") // Instantiated and invoked by Spring Framework via Reflection
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
+    /**
+     * Explicitly disables automatic registration of JwtAuthenticationFilter with the outer
+     * Tomcat servlet container. This guarantees that JwtAuthenticationFilter runs EXCLUSIVELY
+     * inside the Spring Security filter chain at the exact specified position.
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -36,7 +55,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .anyRequest().authenticated()
-            );
+            )
+
+            // 5. Wire stateless JWT filter prior to standard Spring Security authentication
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
