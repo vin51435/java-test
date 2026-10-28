@@ -1,6 +1,5 @@
 package com.manasvia.backend.common.security;
 
-import com.manasvia.backend.modules.identity.model.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

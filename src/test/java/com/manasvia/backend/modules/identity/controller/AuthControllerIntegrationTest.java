@@ -1,6 +1,7 @@
 package com.manasvia.backend.modules.identity.controller;
 
 import com.manasvia.backend.modules.identity.dto.GuestAuthRequest;
+import com.manasvia.backend.modules.identity.dto.RefreshTokenRequest;
 import com.manasvia.backend.modules.identity.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,5 +110,45 @@ class AuthControllerIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/refresh - Should successfully issue new access token given valid refresh token")
+    void testRefreshTokenSuccess() throws Exception {
+        String uniqueFingerprint = "refresh-success-device-" + UUID.randomUUID();
+        GuestAuthRequest guestRequest = new GuestAuthRequest(uniqueFingerprint);
+
+        MvcResult guestResult = mockMvc.perform(post("/api/v1/auth/guest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(guestRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String refreshToken = objectMapper.readTree(guestResult.getResponse().getContentAsString())
+                .path("data").path("refreshToken").asText();
+
+        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(refreshToken);
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.accessToken").isString())
+                .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.data.expiresIn").isNumber());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/refresh - Should return 400 when refresh token does not exist")
+    void testRefreshTokenInvalid() throws Exception {
+        RefreshTokenRequest invalidRequest = new RefreshTokenRequest("non-existent-token-uuid");
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_ARGUMENT"));
     }
 }

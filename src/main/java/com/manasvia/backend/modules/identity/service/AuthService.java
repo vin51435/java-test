@@ -2,10 +2,12 @@ package com.manasvia.backend.modules.identity.service;
 
 import com.manasvia.backend.common.security.JwtService;
 import com.manasvia.backend.modules.identity.dto.GuestAuthRequest;
+import com.manasvia.backend.modules.identity.dto.RefreshTokenRequest;
+import com.manasvia.backend.modules.identity.dto.TokenRefreshResponse;
 import com.manasvia.backend.modules.identity.dto.TokenResponse;
 import com.manasvia.backend.modules.identity.model.RefreshToken;
 import com.manasvia.backend.modules.identity.model.UserAccount;
-import com.manasvia.backend.modules.identity.model.UserRole;
+import com.manasvia.backend.common.security.UserRole;
 import com.manasvia.backend.modules.identity.repository.RefreshTokenRepository;
 import com.manasvia.backend.modules.identity.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
- * Core business orchestration for authentication, guest onboarding, and token issuance.
+ * Core business orchestration for authentication, guest onboarding, and session token lifecycle.
  */
 @Service
 @RequiredArgsConstructor
@@ -77,6 +79,44 @@ public class AuthService {
                 .expiresIn(expiresInSeconds)
                 .userId(user.getId())
                 .role(user.getRole())
+                .build();
+    }
+
+    /**
+     * Rotates an expired access token using a valid, non-revoked refresh token.
+     */
+    @Transactional
+    public TokenRefreshResponse refreshAccessToken(RefreshTokenRequest request) {
+        final String rawToken = request.getRefreshToken().trim();
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(rawToken)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+
+        if (refreshToken.isRevoked()) {
+            throw new IllegalStateException("Refresh token has been revoked");
+        }
+        if (refreshToken.isExpired()) {
+            throw new IllegalStateException("Refresh token has expired");
+        }
+
+        UserAccount user = refreshToken.getUser();
+        if (!user.isActive()) {
+            throw new IllegalStateException("User account is inactive");
+        }
+
+        String newAccessToken = user.getRole() == UserRole.GUEST
+                ? jwtService.generateGuestToken(user.getId())
+                : jwtService.generateToken(user.getId(), user.getRole());
+
+        long expiresInSeconds = (user.getRole() == UserRole.GUEST
+                ? jwtService.getGuestTokenExpirationMs()
+                : jwtService.getAccessTokenExpirationMs()) / 1000;
+
+        log.info("Access token successfully refreshed for user [{}]", user.getId());
+
+        return TokenRefreshResponse.builder()
+                .accessToken(newAccessToken)
+                .tokenType("Bearer")
+                .expiresIn(expiresInSeconds)
                 .build();
     }
 }

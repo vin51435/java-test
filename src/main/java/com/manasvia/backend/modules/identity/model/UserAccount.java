@@ -20,6 +20,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.manasvia.backend.common.security.UserRole;
+
 /**
  * JPA Entity representing an authenticated or anonymous account.
  * Mapped to 'identity_users' table strictly isolated to the identity module.

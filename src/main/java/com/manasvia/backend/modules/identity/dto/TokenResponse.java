@@ -1,6 +1,6 @@
 package com.manasvia.backend.modules.identity.dto;
 
-import com.manasvia.backend.modules.identity.model.UserRole;
+import com.manasvia.backend.common.security.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

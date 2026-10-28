@@ -1,6 +1,5 @@
 package com.manasvia.backend.common.security;
 
-import com.manasvia.backend.modules.identity.model.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

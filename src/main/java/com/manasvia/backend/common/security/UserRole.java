@@ -1,4 +1,4 @@
-package com.manasvia.backend.modules.identity.model;
+package com.manasvia.backend.common.security;
 
 /**
  * Access and authorization roles for accounts in the Manasvia ecosystem.

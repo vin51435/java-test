@@ -1,6 +1,6 @@
 package com.manasvia.backend.common.security;
 
-import com.manasvia.backend.modules.identity.model.UserRole;
+import com.manasvia.backend.common.security.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

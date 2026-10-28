@@ -25,6 +25,8 @@ class OpenApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title").value("Manasvia Backend API"))
                 .andExpect(jsonPath("$.paths['/api/v1/auth/guest']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/auth/refresh']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/users/me']").exists())
                 .andExpect(jsonPath("$.paths['/']").exists())
                 .andExpect(jsonPath("$.components.securitySchemes.BearerAuth").exists())
                 .andExpect(jsonPath("$.components.securitySchemes.BearerAuth.type").value("http"))
