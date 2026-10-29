@@ -28,8 +28,14 @@ public class UserProfileResponse {
     @Schema(description = "Assigned security role in the platform", example = "GUEST")
     private UserRole role;
 
-    @Schema(description = "Linked verified email address (populated if upgraded via Google)", example = "user@example.com")
+    @Schema(description = "User display name", example = "Arjuna")
+    private String displayName;
+
+    @Schema(description = "Linked verified email address (populated if upgraded via Google or email)", example = "user@example.com")
     private String email;
+
+    @Schema(description = "Email verification timestamp (null if unverified or guest)", example = "2026-10-28T10:00:00Z")
+    private Instant emailVerifiedAt;
 
     @Schema(description = "Client device hardware identifier / fingerprint")
     private String deviceFingerprint;

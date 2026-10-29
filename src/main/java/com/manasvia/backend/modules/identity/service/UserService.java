@@ -36,6 +36,8 @@ public class UserService {
                 .id(user.getId())
                 .role(user.getRole())
                 .email(user.getEmail())
+                .displayName(user.getDisplayName())
+                .emailVerifiedAt(user.getEmailVerifiedAt())
                 .deviceFingerprint(user.getDeviceFingerprint())
                 .createdAt(user.getCreatedAt())
                 .active(user.isActive())

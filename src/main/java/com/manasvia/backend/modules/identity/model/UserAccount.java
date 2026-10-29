@@ -46,8 +46,17 @@ public class UserAccount {
     @Column(name = "email", unique = true, length = 255)
     private String email;
 
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
     @Column(name = "google_id", unique = true, length = 255)
     private String googleId;
+
+    @Column(name = "display_name", length = 128)
+    private String displayName;
+
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
