@@ -1,13 +1,17 @@
 package com.manasvia.backend.modules.identity.service;
 
+import com.manasvia.backend.common.exception.AccountInactiveException;
+import com.manasvia.backend.common.exception.InvalidTokenException;
+import com.manasvia.backend.common.exception.TokenExpiredException;
+import com.manasvia.backend.common.exception.TokenRevokedException;
 import com.manasvia.backend.common.security.JwtService;
+import com.manasvia.backend.common.security.UserRole;
 import com.manasvia.backend.modules.identity.dto.GuestAuthRequest;
 import com.manasvia.backend.modules.identity.dto.RefreshTokenRequest;
 import com.manasvia.backend.modules.identity.dto.TokenRefreshResponse;
 import com.manasvia.backend.modules.identity.dto.TokenResponse;
 import com.manasvia.backend.modules.identity.model.RefreshToken;
 import com.manasvia.backend.modules.identity.model.UserAccount;
-import com.manasvia.backend.common.security.UserRole;
 import com.manasvia.backend.modules.identity.repository.RefreshTokenRepository;
 import com.manasvia.backend.modules.identity.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,11 +54,7 @@ public class AuthService {
                 .orElseGet(() -> {
                     log.info("Registering new guest account for device fingerprint prefix: [{}...]",
                             fingerprint.substring(0, Math.min(8, fingerprint.length())));
-                    UserAccount newAccount = UserAccount.builder()
-                            .deviceFingerprint(fingerprint)
-                            .role(UserRole.GUEST)
-                            .active(true)
-                            .build();
+                    UserAccount newAccount = UserAccount.createGuest(fingerprint);
                     return userRepository.save(newAccount);
                 });
 
@@ -83,24 +83,24 @@ public class AuthService {
     }
 
     /**
-     * Rotates an expired access token using a valid, non-revoked refresh token.
+     * Refreshes an expired access token using a valid, non-revoked refresh token.
      */
     @Transactional
     public TokenRefreshResponse refreshAccessToken(RefreshTokenRequest request) {
         final String rawToken = request.getRefreshToken().trim();
         RefreshToken refreshToken = refreshTokenRepository.findByToken(rawToken)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
         if (refreshToken.isRevoked()) {
-            throw new IllegalStateException("Refresh token has been revoked");
+            throw new TokenRevokedException("Refresh token has been revoked");
         }
         if (refreshToken.isExpired()) {
-            throw new IllegalStateException("Refresh token has expired");
+            throw new TokenExpiredException("Refresh token has expired");
         }
 
         UserAccount user = refreshToken.getUser();
         if (!user.isActive()) {
-            throw new IllegalStateException("User account is inactive");
+            throw new AccountInactiveException("User account is inactive");
         }
 
         String newAccessToken = user.getRole() == UserRole.GUEST

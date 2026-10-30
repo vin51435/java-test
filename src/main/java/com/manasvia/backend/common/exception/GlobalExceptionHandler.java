@@ -40,16 +40,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.failure("INVALID_ARGUMENT", ex.getMessage()));
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException ex) {
-        log.warn("Authentication / state error: {}", ex.getMessage());
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationFailedException(AuthenticationFailedException ex) {
+        log.warn("Domain authentication failed: [{}] {}", ex.getErrorCode(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.failure("AUTHENTICATION_ERROR", ex.getMessage()));
+                .body(ApiResponse.failure(ex.getErrorCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(org.springframework.security.core.AuthenticationException ex) {
-        log.warn("Authentication failed: {}", ex.getMessage());
+        log.warn("Security authentication failed: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.failure("UNAUTHORIZED", ex.getMessage()));
     }

@@ -28,6 +28,9 @@ class UserControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private com.manasvia.backend.common.security.JwtService jwtService;
+
     @Test
     @DisplayName("GET /api/v1/users/me - Should return 200 with user profile when valid Bearer token provided")
     void testGetCurrentUserWithBearerToken() throws Exception {
@@ -56,9 +59,54 @@ class UserControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/users/me - Should return 401 or 403 when no Bearer token provided")
+    @DisplayName("GET /api/v1/users/me - Should return 401 JSON ApiResponse when no Bearer token provided")
     void testGetCurrentUserUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/users/me"))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.error.message").value("Full authentication is required to access this resource"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/ - Unauthenticated request should return 401 JSON ApiResponse instead of HTML Whitelabel")
+    void testUnauthenticatedApiRootReturnsJson() throws Exception {
+        mockMvc.perform(get("/api/v1/"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/me - Should return 401 when invalid Bearer token is provided")
+    void testGetCurrentUserWithInvalidJwt() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me")
+                        .header("Authorization", "Bearer invalid.jwt.signature"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/me - Should return 401 when non-Bearer Authorization header is provided")
+    void testGetCurrentUserWithNonBearerHeader() throws Exception {
+        mockMvc.perform(get("/api/v1/users/me")
+                        .header("Authorization", "Basic dXNlcjpwYXNz"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/users/me - Should return 400 INVALID_ARGUMENT when valid JWT belongs to nonexistent user")
+    void testGetCurrentUserForDeletedUser() throws Exception {
+        UUID nonExistentUserId = UUID.randomUUID();
+        String validJwtForDeletedUser = jwtService.generateGuestToken(nonExistentUserId);
+
+        mockMvc.perform(get("/api/v1/users/me")
+                        .header("Authorization", "Bearer " + validJwtForDeletedUser))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_ARGUMENT"));
     }
 }

@@ -75,6 +75,17 @@ public class UserAccount {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /**
+     * Factory method for creating an anonymous guest account with encapsulated defaults.
+     */
+    public static UserAccount createGuest(String deviceFingerprint) {
+        UserAccount account = new UserAccount();
+        account.setDeviceFingerprint(deviceFingerprint);
+        account.setRole(UserRole.GUEST);
+        account.setActive(true);
+        return account;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
