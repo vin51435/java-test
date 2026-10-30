@@ -10,8 +10,16 @@
     <property name="LOG_DIR" value="logs" />
     <property name="APP_NAME" value="manasvia-backend" />
 
-    <!-- Console Appender with Virtual Thread and Request Tracing support -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Development Console Appender: Clean, concise timestamps, no thread name clutter -->
+    <appender name="CONSOLE_DEV" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5p) %clr([%X{requestId:-SYS}]){yellow} %clr(%logger{0}){cyan}: %m%n%wEx</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Production Console Appender: Full date timestamps and thread tracking for concurrency diagnostics -->
+    <appender name="CONSOLE_PROD" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%15.15t]){magenta} %clr(%-5p) %clr([%X{requestId:-SYSTEM}]){yellow} %clr(%-36.36logger{36}){cyan} %clr(:){faint} %m%n%wEx</pattern>
             <charset>UTF-8</charset>
@@ -37,22 +45,22 @@
         </encoder>
     </appender>
 
-    <!-- Development Profile: Rich, colored console logs -->
+    <!-- Development Profile: Concise, clean console logs -->
     <springProfile name="dev">
         <logger name="com.manasvia.backend" level="DEBUG" />
         <logger name="org.hibernate.SQL" level="DEBUG" />
         <logger name="org.springframework.web" level="INFO" />
         <root level="INFO">
-            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="CONSOLE_DEV" />
         </root>
     </springProfile>
 
-    <!-- Production Profile: Console + Compressed File Archiving -->
+    <!-- Production Profile: Full enterprise logs + Compressed File Archiving -->
     <springProfile name="prod">
         <logger name="com.manasvia.backend" level="INFO" />
         <logger name="org.hibernate.SQL" level="ERROR" />
         <root level="INFO">
-            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="CONSOLE_PROD" />
             <appender-ref ref="FILE" />
         </root>
     </springProfile>
@@ -60,7 +68,7 @@
     <!-- Test Profile: Concise output -->
     <springProfile name="test">
         <root level="WARN">
-            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="CONSOLE_DEV" />
         </root>
     </springProfile>
 

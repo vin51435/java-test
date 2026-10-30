@@ -82,6 +82,15 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         }
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        // Skip noisy static assets for Swagger UI
+        return path.startsWith("/swagger-ui/") && (
+                path.endsWith(".css") || path.endsWith(".js") || path.endsWith(".png") || path.endsWith(".ico")
+        );
+    }
+
     private String extractClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isBlank()) {

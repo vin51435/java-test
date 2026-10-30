@@ -41,6 +41,13 @@ spring:
         enabled: ${REDIS_SSL_ENABLED:true}
       timeout: 1000ms
 
+# Production Security & CORS
+manasvia:
+  security:
+    cors:
+      allowed-origin-patterns:
+        - "https://*.manasvia.com"
+
 # Production Performance Logging (Errors only for SQL queries)
 logging:
   level:
@@ -48,3 +55,10 @@ logging:
     com.manasvia.backend: INFO
     org.hibernate.SQL: ERROR
     org.springframework.security: WARN
+
+# Production Security: Disable interactive Swagger UI and raw OpenAPI specs completely
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

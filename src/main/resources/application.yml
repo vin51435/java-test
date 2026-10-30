@@ -25,6 +25,43 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
-# Default Web Server Port
+# ==============================================================================
+# Security & JWT Configuration
+# ==============================================================================
+manasvia:
+  jwt:
+    # 256-bit HS256 secret key (64 hex characters)
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    # Standard authenticated access token: 24 hours (86,400,000 ms)
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION:86400000}
+    # Extended guest access token: 30 days (2,592,000,000 ms)
+    guest-token-expiration-ms: ${JWT_GUEST_EXPIRATION:2592000000}
+  security:
+    cors:
+      allowed-origin-patterns:
+        - "http://localhost:*"
+        - "http://127.0.0.1:*"
+        - "http://10.*"
+        - "http://192.168.*"
+
+# ==============================================================================
+# SpringDoc OpenAPI / Swagger UI Configuration
+# ==============================================================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+
+# ==============================================================================
+# Web Server Configuration
+# ==============================================================================
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
+  address: 0.0.0.0
